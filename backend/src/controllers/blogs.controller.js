@@ -34,7 +34,7 @@ export const createBlog = async (req, res) => {
   }
 };
 
-export const getBlogById = async (req, res) => {
+export const viewMyBlog = async (req, res) => {
   try {
     const blogId = req.params.blogId;
     const userId = req.user._id;
@@ -184,6 +184,30 @@ export const createBlogWithAi = async (req, res) => {
     });
   } catch (error) {
     console.log("Error in createBlogWithAi controller:", error.message);
+    res.status(500).json({ message: "Internal Server error" });
+  }
+};
+
+export const viewBlog = async (req, res) => {
+  try {
+    const blogId = req.params.blogId;
+
+    if (!blogId) {
+      return res.status(400).json({ message: "Blog ID is required" });
+    }
+
+    const blog = await Blog.findById(blogId);
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    res.status(200).json({
+      message: "Blog fetched successfully",
+      data: blog,
+    });
+  } catch (error) {
+    console.log("Error in viewBlog controller:", error.message);
     res.status(500).json({ message: "Internal Server error" });
   }
 };

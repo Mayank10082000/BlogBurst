@@ -1,3 +1,12 @@
+import OpenAI from "openai";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 export const generateBlogPostWithAi = async (prompt, options = {}) => {
   try {
     // Create a structured prompt to get proper title and content

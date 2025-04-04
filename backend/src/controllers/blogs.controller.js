@@ -155,3 +155,11 @@ export const getAllBlogs = async (req, res) => {
     res.status(500).json({ message: "Internal Server error" });
   }
 };
+
+export const createBlogwithAi = async (req, res) => {
+  try {
+  } catch (error) {
+    console.log("Error in createBlogwithAI controller:", error.message);
+    res.status(500).json({ message: "Internal Server error" });
+  }
+};

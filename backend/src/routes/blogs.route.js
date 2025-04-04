@@ -7,6 +7,7 @@ import {
   updateBlog,
   deleteBlog,
   getAllBlogsByUserId,
+  createBlogwithAi,
 } from "../controllers/blogs.controller.js";
 
 import { protectRoute } from "../middlewares/auth.middleware.js";
@@ -19,5 +20,6 @@ router.get("/my-blogs/:userId", protectRoute, getAllBlogsByUserId);
 router.get("/:blogId", protectRoute, getBlogById);
 router.put("/update/:blogId", protectRoute, updateBlog);
 router.delete("/delete/:blogId", protectRoute, deleteBlog);
+router.post("/create-with-ai", protectRoute, createBlogwithAi);
 
 export default router;

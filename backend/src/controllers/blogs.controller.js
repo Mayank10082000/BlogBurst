@@ -5,6 +5,7 @@
 // public page for list of all blogs
 
 import Blog from "../models/blogs.model.js";
+import { generateBlogPostWithAi } from "../lib/aiService.js";
 
 export const createBlog = async (req, res) => {
   try {
@@ -158,6 +159,30 @@ export const getAllBlogs = async (req, res) => {
 
 export const createBlogWithAi = async (req, res) => {
   try {
+    const { prompt } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({ message: "Prompt is required" });
+    }
+
+    const userId = req.user._id; // Get the userId from the request object
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+    const generatedContent = await generateBlogPostWithAi(prompt);
+
+    const newBlog = new Blog({
+      userId,
+      blogHeading: generatedContent.title,
+      blogContent: generatedContent.content,
+    });
+
+    await newBlog.save();
+    res.status(200).json({
+      message: "Blog created successfully",
+      data: newBlog,
+    });
   } catch (error) {
     console.log("Error in createBlogwithAI controller:", error.message);
     res.status(500).json({ message: "Internal Server error" });

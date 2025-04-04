@@ -156,7 +156,7 @@ export const getAllBlogs = async (req, res) => {
   }
 };
 
-export const createBlogwithAi = async (req, res) => {
+export const createBlogWithAi = async (req, res) => {
   try {
   } catch (error) {
     console.log("Error in createBlogwithAI controller:", error.message);

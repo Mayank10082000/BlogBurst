@@ -168,12 +168,12 @@ export const createBlogWithAi = async (req, res) => {
     }
 
     const generatedContent = await generateBlogPostWithAi(prompt);
-    const { title, content } = generatedContent;
+    const { blogHeading, blogContent } = generatedContent;
 
     const newBlog = new Blog({
       userId,
-      blogHeading: title,
-      blogContent: content,
+      blogHeading: blogHeading,
+      blogContent: blogContent,
     });
 
     const savedBlog = await newBlog.save();

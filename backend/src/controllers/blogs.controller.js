@@ -161,30 +161,29 @@ export const createBlogWithAi = async (req, res) => {
   try {
     const { prompt } = req.body;
 
-    if (!prompt) {
-      return res.status(400).json({ message: "Prompt is required" });
-    }
-
     const userId = req.user._id; // Get the userId from the request object
 
-    if (!userId) {
-      return res.status(400).json({ message: "User ID is required" });
+    if (!prompt || !userId) {
+      return res.status(400).json({ message: "All fields are required" });
     }
+
     const generatedContent = await generateBlogPostWithAi(prompt);
+    const { title, content } = generatedContent;
 
     const newBlog = new Blog({
       userId,
-      blogHeading: generatedContent.title,
-      blogContent: generatedContent.content,
+      blogHeading: title,
+      blogContent: content,
     });
 
-    await newBlog.save();
+    const savedBlog = await newBlog.save();
+
     res.status(200).json({
       message: "Blog created successfully",
-      data: newBlog,
+      data: savedBlog,
     });
   } catch (error) {
-    console.log("Error in createBlogwithAI controller:", error.message);
+    console.log("Error in createBlogWithAi controller:", error.message);
     res.status(500).json({ message: "Internal Server error" });
   }
 };

@@ -6,6 +6,7 @@
 
 import Blog from "../models/blogs.model.js";
 import { generateBlogPostWithAi } from "../lib/aiService.js";
+import { emitNewBlog, emitBlogUpdate, emitBlogDelete } from "../lib/socket.js";
 
 export const createBlog = async (req, res) => {
   try {
@@ -24,6 +25,8 @@ export const createBlog = async (req, res) => {
     });
 
     await newBlog.save();
+    emitNewBlog(newBlog); // Emit the new blog event
+
     res.status(200).json({
       message: "Blog created successfully",
       data: newBlog,
@@ -80,6 +83,8 @@ export const updateBlog = async (req, res) => {
       return res.status(404).json({ message: "Blog not found" });
     }
 
+    emitBlogUpdate(updatedBlog); // Emit the blog update event
+
     res.status(200).json({
       message: "Blog updated successfully",
       data: updatedBlog,
@@ -104,6 +109,8 @@ export const deleteBlog = async (req, res) => {
     if (!deletedBlog) {
       return res.status(404).json({ message: "Blog not found" });
     }
+
+    emitBlogDelete(blogId); // Emit the blog delete event
 
     res.status(200).json({
       message: "Blog deleted successfully",
@@ -177,6 +184,8 @@ export const createBlogWithAi = async (req, res) => {
     });
 
     const savedBlog = await newBlog.save();
+
+    emitNewBlog(savedBlog); // Emit the new blog event
 
     res.status(200).json({
       message: "Blog created successfully",

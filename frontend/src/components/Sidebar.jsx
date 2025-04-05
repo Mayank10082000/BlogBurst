@@ -1,5 +1,5 @@
 // Sidebar component should only be visible to the user who is logged in and not to the public
-// // This should be visible on the left side of the user dashboard page and should be sticky
+// // This should be visible on the left side of the user dashboard page.
 // Should contain below options:
 // 1. create blog with AI
 // 2. create blog

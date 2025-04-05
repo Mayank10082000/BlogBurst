@@ -35,51 +35,36 @@ const App = () => {
     <div className="min-h-screen flex flex-col">
       <NavBar />
 
-      <main className="flex-grow">
-        <Routes>
-          {/* Public routes accessible to everyone */}
-          <Route path="/" element={<PublicBlogsPage />} />
+      <Routes>
+        {/* Public routes accessible to everyone */}
+        <Route path="/" element={<PublicBlogsPage />} />
 
-          {/* Authentication routes - redirect to dashboard if already logged in */}
-          <Route
-            path="/login"
-            element={!authUser ? <LoginPage /> : <Navigate to="/dashboard" />}
-          />
-          <Route
-            path="/signup"
-            element={!authUser ? <SignupPage /> : <Navigate to="/dashboard" />}
-          />
-          <Route
-            path="/forgot-password"
-            element={
-              !authUser ? <ForgotPasswordPage /> : <Navigate to="/dashboard" />
-            }
-          />
-          <Route
-            path="/reset-password/:resetToken"
-            element={
-              !authUser ? <ResetPasswordPage /> : <Navigate to="/dashboard" />
-            }
-          />
+        <Route
+          path="/"
+          element={authUser ? <HomePage /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/signup"
+          element={!authUser ? <SignUpPage /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/login"
+          element={!authUser ? <LoginPage /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            !authUser ? <ForgotPasswordPage /> : <Navigate to="/login" />
+          }
+        />
+        <Route
+          path="/reset-password/:token"
+          element={!authUser ? <ResetPasswordPage /> : <Navigate to="/login" />}
+        />
 
-          {/* Protected routes - require authentication */}
-          <Route
-            path="/dashboard"
-            element={authUser ? <UserDashboard /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/create-blog"
-            element={authUser ? <CreateBlogPage /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/edit-blog/:blogId"
-            element={authUser ? <CreateBlogPage /> : <Navigate to="/login" />}
-          />
-
-          {/* Fallback route */}
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </main>
+        {/* Fallback route */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
 
       <Toaster position="top-center" reverseOrder={false} />
     </div>

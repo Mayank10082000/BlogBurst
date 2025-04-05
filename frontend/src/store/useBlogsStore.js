@@ -14,6 +14,7 @@ export const useBlogsStore = create((set) => ({
   isGettingBlog: false,
   myBlogs: [],
   allBlogs: [],
+  getBlog: null,
 
   createBlog: async (data) => {
     set({ isCreatingBlog: true });
@@ -33,8 +34,8 @@ export const useBlogsStore = create((set) => ({
     set({ isGettingMyBlogs: true });
     try {
       const res = await axiosInstance.get(`/blogs/my-blogs/${userId}`);
-      const myBlogs = res.data?.data || [];
-      set({ getMyBlogs: myBlogs });
+      const myBlogsArray = res.data?.data || [];
+      set({ myBlogs: myBlogsArray });
     } catch (error) {
       console.log("Error in myBlogs: ", error);
       toast.error(error.response.data.message);
@@ -75,8 +76,8 @@ export const useBlogsStore = create((set) => ({
     try {
       set({ isGettingAllBlogs: true });
       const res = await axiosInstance.get("/blogs/all");
-      const allBlogs = res.data?.data || [];
-      set({ getAllBlogs: allBlogs });
+      const allBlogsArray = res.data?.data || [];
+      set({ allBlogs: allBlogsArray });
     } catch (error) {
       console.log("Error in allBlogs: ", error);
       toast.error(error.response.data.message);
@@ -85,7 +86,7 @@ export const useBlogsStore = create((set) => ({
     }
   },
 
-  getBlog: async (blogId) => {
+  getMyBlog: async (blogId) => {
     set({ isGettingBlog: true });
     try {
       const res = await axiosInstance.get(`/blogs/${blogId}`);

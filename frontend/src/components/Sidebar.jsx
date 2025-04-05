@@ -10,7 +10,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Bot, Edit, Newspaper, Globe } from "lucide-react";
 
-const Sidebar = () => {
+const SideBar = () => {
   const navigate = useNavigate();
 
   const sidebarButtons = [
@@ -55,4 +55,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default SideBar;

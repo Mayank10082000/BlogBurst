@@ -17,10 +17,132 @@ if a person has already created some blogs, then the list of blogs should be sho
 // Blog details modal file should come for popup card component
 // Blog card modal file should come preview of all the blogs the user have created
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/useAuthStore";
+import { useBlogsStore } from "../store/useBlogsStore";
+import Sidebar from "../components/SideBar";
+import BlogCardModal from "../components/BlogCardModal";
+import { Plus, Bot } from "lucide-react";
 
 const UserDashboard = () => {
-  return <div>UserDashboard</div>;
+  const navigate = useNavigate();
+  const { authUser } = useAuthStore();
+  const { myBlogs, getMyBlogs, isGettingMyBlogs } = useBlogsStore();
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const blogsPerPage = 6;
+
+  // Fetch user's blogs on component mount
+  useEffect(() => {
+    if (authUser) {
+      getMyBlogs(authUser._id);
+    }
+  }, [authUser, getMyBlogs]);
+
+  // Pagination calculations
+  const indexOfLastBlog = currentPage * blogsPerPage;
+  const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
+  const currentBlogs = myBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
+
+  // Pagination handler
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Navigate to create blog pages
+  const handleCreateBlog = () => {
+    navigate("/create-blog");
+  };
+
+  const handleCreateAiBlog = () => {
+    navigate("/create-blog-with-ai");
+  };
+
+  // Render pagination controls
+  const renderPagination = () => {
+    const pageNumbers = [];
+    for (let i = 1; i <= Math.ceil(myBlogs.length / blogsPerPage); i++) {
+      pageNumbers.push(i);
+    }
+
+    return (
+      <div className="flex justify-center space-x-2 mt-6">
+        {pageNumbers.map((number) => (
+          <button
+            key={number}
+            onClick={() => paginate(number)}
+            className={`px-4 py-2 rounded-md ${
+              currentPage === number
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 text-gray-700"
+            }`}
+          >
+            {number}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  // Render empty state
+  const renderEmptyState = () => (
+    <div className="flex flex-col items-center justify-center space-y-6 p-8 bg-white rounded-lg shadow-md">
+      <p className="text-xl text-gray-600 text-center">
+        No blogs created yet. Start your blogging journey!
+      </p>
+      <div className="flex space-x-4">
+        <button
+          onClick={handleCreateBlog}
+          className="btn btn-primary flex items-center"
+        >
+          <Plus className="mr-2" /> Create Blog
+        </button>
+        <button
+          onClick={handleCreateAiBlog}
+          className="btn btn-secondary flex items-center"
+        >
+          <Bot className="mr-2" /> AI Blog Assistant
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex min-h-screen">
+      {/* Sidebar */}
+      <div className="w-64 p-4">
+        <Sidebar />
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-grow p-6 bg-gray-50">
+        <div className="container mx-auto">
+          <h1 className="text-3xl font-bold mb-6 text-gray-800">My Blogs</h1>
+
+          {/* Loading State */}
+          {isGettingMyBlogs ? (
+            <div className="flex justify-center items-center h-64">
+              <span className="loading loading-spinner loading-lg"></span>
+            </div>
+          ) : myBlogs.length === 0 ? (
+            renderEmptyState()
+          ) : (
+            <>
+              {/* Blog Grid */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {currentBlogs.map((blog) => (
+                  <BlogCardModal key={blog._id} blog={blog} />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {myBlogs.length > blogsPerPage && renderPagination()}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default UserDashboard;

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Navigate, Routes, Route, useLocation } from "react-router-dom";
+import { Navigate, Routes, Route } from "react-router-dom";
 import { useAuthStore } from "./store/useAuthStore";
 import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
@@ -20,19 +20,6 @@ import CreateBlogWithAi from "./pages/CreateBlogWithAi";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
-  const location = useLocation();
-
-  // Check if current route is an unauthenticated page
-  const isUnauthenticatedPage =
-    (!authUser &&
-      [
-        "/login",
-        "/signup",
-        "/forgot-password",
-        "/",
-        "/reset-password",
-      ].includes(location.pathname)) ||
-    location.pathname.startsWith("/reset-password/");
 
   useEffect(() => {
     checkAuth();
@@ -46,7 +33,7 @@ const App = () => {
     );
 
   return (
-    <Background isGradient={isUnauthenticatedPage}>
+    <Background isGradient={true}>
       <div className="flex flex-col min-h-screen">
         <NavBar />
 

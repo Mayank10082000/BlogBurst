@@ -11,3 +11,8 @@ if a person has already created some blogs, then the list of blogs should be sho
 */
 
 // Add pagination also in the user dashboard
+
+// All the blogs should be visible to the user.
+
+//There should be a popup for viewing the blog and this popup should make the background dark
+// Add pagination also in this file

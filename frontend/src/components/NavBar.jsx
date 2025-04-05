@@ -50,6 +50,30 @@ const NavBar = () => {
       : []),
   ];
 
+  // Desktop Navigation Items
+  const desktopNavItems = [
+    {
+      label: "Community Blogs",
+      onClick: () => navigate("/"),
+    },
+    ...(authUser
+      ? [
+          {
+            label: "Create Blog with AI",
+            onClick: () => navigate("/create-blog-with-ai"),
+          },
+          {
+            label: "Create Blog",
+            onClick: () => navigate("/create-blog"),
+          },
+          {
+            label: "My Blogs",
+            onClick: () => navigate("/dashboard"),
+          },
+        ]
+      : []),
+  ];
+
   // Helper functions
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
@@ -101,7 +125,54 @@ const NavBar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center justify-between w-full ml-6">
-            {/* Desktop Navigation Content (existing code) */}
+            <div className="flex space-x-4">
+              {desktopNavItems.map((item, index) => (
+                <button
+                  key={index}
+                  onClick={item.onClick}
+                  className="text-white hover:bg-blue-800 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Desktop Authentication Buttons */}
+            <div className="flex items-center space-x-4">
+              {!authUser ? (
+                <>
+                  <button
+                    onClick={handleLogin}
+                    className="text-white hover:bg-blue-800 px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    Login
+                  </button>
+                  <button
+                    onClick={handleSignup}
+                    className="bg-white text-blue-900 hover:bg-blue-50 px-4 py-2 rounded-md text-sm font-medium"
+                  >
+                    Sign Up
+                  </button>
+                </>
+              ) : (
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                      <User className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="text-white">
+                      {authUser.fullName.split(" ")[0]}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="bg-white text-blue-900 hover:bg-blue-50 px-4 py-2 rounded-md text-sm font-medium"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Mobile Menu Button */}

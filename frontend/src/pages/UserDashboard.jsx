@@ -16,3 +16,11 @@ if a person has already created some blogs, then the list of blogs should be sho
 
 //There should be a popup for viewing the blog and this popup should make the background dark
 // Add pagination also in this file
+
+import React from "react";
+
+const UserDashboard = () => {
+  return <div>UserDashboard</div>;
+};
+
+export default UserDashboard;

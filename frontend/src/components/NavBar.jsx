@@ -12,3 +12,11 @@
 
 // this should be responsive and should contain a hamburger menu on mobile devices and tablet devices and should be visible on desktop devices
 // this should be sticky and should be visible on all pages of the application
+
+import React from "react";
+
+const NavBar = () => {
+  return <div>NavBar</div>;
+};
+
+export default NavBar;

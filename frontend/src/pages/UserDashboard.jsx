@@ -90,16 +90,16 @@ const UserDashboard = () => {
       <p className="text-xl text-gray-600 text-center">
         No blogs created yet. Start your blogging journey!
       </p>
-      <div className="flex space-x-4">
+      <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
         <button
           onClick={handleCreateBlog}
-          className="btn btn-primary flex items-center"
+          className="btn btn-primary flex items-center bg-purple-600 text-white px-4 py-2 rounded-lg"
         >
           <Plus className="mr-2" /> Create Blog
         </button>
         <button
           onClick={handleCreateAiBlog}
-          className="btn btn-secondary flex items-center"
+          className="btn btn-secondary flex items-center bg-pink-500 text-white px-4 py-2 rounded-lg"
         >
           <Bot className="mr-2" /> AI Blog Assistant
         </button>
@@ -108,16 +108,16 @@ const UserDashboard = () => {
   );
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex flex-col md:flex-row min-h-screen">
       {/* Sidebar */}
-      <div className="w-64 p-4">
-        <Sidebar />
-      </div>
+      <Sidebar />
 
-      {/* Main Content */}
-      <div className="flex-grow p-6 bg-gray-50">
-        <div className="container mx-auto">
-          <h1 className="text-3xl font-bold mb-6 text-gray-800">My Blogs</h1>
+      {/* Main Content Area */}
+      <div className="flex-grow p-4 md:p-6 bg-gray-50">
+        <div className="container mx-auto max-w-6xl">
+          <h1 className="text-3xl font-bold mb-6 text-gray-800 ml-4 md:ml-0">
+            My Blogs
+          </h1>
 
           {/* Loading State */}
           {isGettingMyBlogs ? (
@@ -125,11 +125,11 @@ const UserDashboard = () => {
               <span className="loading loading-spinner loading-lg"></span>
             </div>
           ) : myBlogs.length === 0 ? (
-            renderEmptyState()
+            <div className="px-4 md:px-0">{renderEmptyState()}</div>
           ) : (
             <>
               {/* Blog Grid */}
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 px-4 md:px-0">
                 {currentBlogs.map((blog) => (
                   <BlogCardModal key={blog._id} blog={blog} />
                 ))}

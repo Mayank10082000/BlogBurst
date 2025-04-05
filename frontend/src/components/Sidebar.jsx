@@ -37,7 +37,7 @@ const SideBar = () => {
   ];
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-4 w-64 space-y-2">
+    <div className="hidden md:block bg-white shadow-md rounded-lg p-4 w-64 space-y-2">
       {sidebarButtons.map((button, index) => (
         <button
           key={index}

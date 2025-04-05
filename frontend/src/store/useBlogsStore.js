@@ -20,8 +20,9 @@ export const useBlogsStore = create((set) => ({
     set({ isCreatingBlog: true });
     try {
       const res = await axiosInstance.post("/blogs/create", data);
-      set({ isCreatingBlog: res.data });
+      set({ isCreatingBlog: true });
       toast.success("Blog Created Successfully!");
+      return res.data;
     } catch (error) {
       console.log("Error in createBlog: ", error);
       toast.error(error.response.data.message);
@@ -44,12 +45,16 @@ export const useBlogsStore = create((set) => ({
     }
   },
 
-  updateBlog: async (blogId) => {
+  updateBlog: async (blogId, updateData) => {
     set({ isUpdatingBlog: true });
     try {
-      const res = await axiosInstance.put(`/blogs/update/${blogId}`);
+      const res = await axiosInstance.put(
+        `/blogs/update/${blogId}`,
+        updateData
+      );
       set({ isUpdatingBlog: res.data });
       toast.success("Blog Updated Successfully!");
+      return res.data;
     } catch (error) {
       console.log("Error in updateBlog: ", error);
       toast.error(error.response.data.message);

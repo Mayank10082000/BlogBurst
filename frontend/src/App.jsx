@@ -39,27 +39,44 @@ const App = () => {
         {/* Public routes accessible to everyone */}
         <Route path="/" element={<PublicBlogsPage />} />
 
+        {/* Authentication routes - redirect to dashboard if already logged in */}
         <Route
-          path="/"
-          element={authUser ? <HomePage /> : <Navigate to="/login" />}
+          path="/login"
+          element={!authUser ? <LoginPage /> : <Navigate to="/dashboard" />}
         />
         <Route
           path="/signup"
-          element={!authUser ? <SignUpPage /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/login"
-          element={!authUser ? <LoginPage /> : <Navigate to="/" />}
+          element={!authUser ? <SignupPage /> : <Navigate to="/dashboard" />}
         />
         <Route
           path="/forgot-password"
           element={
-            !authUser ? <ForgotPasswordPage /> : <Navigate to="/login" />
+            !authUser ? <ForgotPasswordPage /> : <Navigate to="/dashboard" />
           }
         />
         <Route
-          path="/reset-password/:token"
-          element={!authUser ? <ResetPasswordPage /> : <Navigate to="/login" />}
+          path="/reset-password/:resetToken"
+          element={
+            !authUser ? <ResetPasswordPage /> : <Navigate to="/dashboard" />
+          }
+        />
+
+        {/* Protected routes - require authentication */}
+        <Route
+          path="/dashboard"
+          element={authUser ? <UserDashboard /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/create-blog"
+          element={authUser ? <CreateBlogPage /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/create-blog-with-ai"
+          element={authUser ? <CreateBlogWithAi /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/edit-blog/:blogId"
+          element={authUser ? <CreateBlogPage /> : <Navigate to="/login" />}
         />
 
         {/* Fallback route */}

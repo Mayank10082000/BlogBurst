@@ -1,11 +1,12 @@
 import React, { useEffect } from "react";
-import { Navigate, Routes, Route } from "react-router-dom";
+import { Navigate, Routes, Route, useLocation } from "react-router-dom";
 import { useAuthStore } from "./store/useAuthStore";
 import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 
 // Components
 import NavBar from "./components/NavBar";
+import Background from "./components/Background";
 
 // Pages
 import LoginPage from "./pages/LoginPage";
@@ -19,6 +20,19 @@ import CreateBlogWithAi from "./pages/CreateBlogWithAi";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
+  const location = useLocation();
+
+  // Check if current route is an unauthenticated page
+  const isUnauthenticatedPage =
+    (!authUser &&
+      [
+        "/login",
+        "/signup",
+        "/forgot-password",
+        "/",
+        "/reset-password",
+      ].includes(location.pathname)) ||
+    location.pathname.startsWith("/reset-password/");
 
   useEffect(() => {
     checkAuth();
@@ -32,59 +46,71 @@ const App = () => {
     );
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <NavBar />
+    <Background isGradient={isUnauthenticatedPage}>
+      <div className="flex flex-col min-h-screen">
+        <NavBar />
 
-      <Routes>
-        {/* Public routes accessible to everyone */}
-        <Route path="/" element={<PublicBlogsPage />} />
+        <div className="flex-grow">
+          <Routes>
+            {/* Public routes accessible to everyone */}
+            <Route path="/" element={<PublicBlogsPage />} />
 
-        {/* Authentication routes - redirect to dashboard if already logged in */}
-        <Route
-          path="/login"
-          element={!authUser ? <LoginPage /> : <Navigate to="/dashboard" />}
-        />
-        <Route
-          path="/signup"
-          element={!authUser ? <SignupPage /> : <Navigate to="/dashboard" />}
-        />
-        <Route
-          path="/forgot-password"
-          element={
-            !authUser ? <ForgotPasswordPage /> : <Navigate to="/dashboard" />
-          }
-        />
-        <Route
-          path="/reset-password/:resetToken"
-          element={
-            !authUser ? <ResetPasswordPage /> : <Navigate to="/dashboard" />
-          }
-        />
+            {/* Authentication routes - redirect to dashboard if already logged in */}
+            <Route
+              path="/login"
+              element={!authUser ? <LoginPage /> : <Navigate to="/dashboard" />}
+            />
+            <Route
+              path="/signup"
+              element={
+                !authUser ? <SignupPage /> : <Navigate to="/dashboard" />
+              }
+            />
+            <Route
+              path="/forgot-password"
+              element={
+                !authUser ? (
+                  <ForgotPasswordPage />
+                ) : (
+                  <Navigate to="/dashboard" />
+                )
+              }
+            />
+            <Route
+              path="/reset-password/:resetToken"
+              element={
+                !authUser ? <ResetPasswordPage /> : <Navigate to="/dashboard" />
+              }
+            />
 
-        {/* Protected routes - require authentication */}
-        <Route
-          path="/dashboard"
-          element={authUser ? <UserDashboard /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/create-blog"
-          element={authUser ? <CreateBlogPage /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/create-blog-with-ai"
-          element={authUser ? <CreateBlogWithAi /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/edit-blog/:blogId"
-          element={authUser ? <CreateBlogPage /> : <Navigate to="/login" />}
-        />
+            {/* Protected routes - require authentication */}
+            <Route
+              path="/dashboard"
+              element={authUser ? <UserDashboard /> : <Navigate to="/login" />}
+            />
+            <Route
+              path="/create-blog"
+              element={authUser ? <CreateBlogPage /> : <Navigate to="/login" />}
+            />
+            <Route
+              path="/create-blog-with-ai"
+              element={
+                authUser ? <CreateBlogWithAi /> : <Navigate to="/login" />
+              }
+            />
+            <Route
+              path="/edit-blog/:blogId"
+              element={authUser ? <CreateBlogPage /> : <Navigate to="/login" />}
+            />
 
-        {/* Fallback route */}
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
+            {/* Fallback route */}
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </div>
 
-      <Toaster position="top-center" reverseOrder={false} />
-    </div>
+        <Toaster position="top-center" reverseOrder={false} />
+      </div>
+    </Background>
   );
 };
 

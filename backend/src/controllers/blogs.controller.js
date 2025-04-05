@@ -37,31 +37,6 @@ export const createBlog = async (req, res) => {
   }
 };
 
-export const viewMyBlog = async (req, res) => {
-  try {
-    const blogId = req.params.blogId;
-    const userId = req.user._id;
-
-    if (!blogId || !userId) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-
-    const blog = await Blog.findById({ _id: blogId, userId });
-
-    if (!blog) {
-      return res.status(404).json({ message: "Blog not found" });
-    }
-
-    res.status(200).json({
-      message: "Blog fetched successfully",
-      data: blog,
-    });
-  } catch (error) {
-    console.log("Error in getBlogsById controller:", error.message);
-    res.status(500).json({ message: "Internal Server error" });
-  }
-};
-
 export const updateBlog = async (req, res) => {
   try {
     const blogId = req.params.blogId;

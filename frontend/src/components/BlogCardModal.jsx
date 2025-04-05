@@ -22,7 +22,7 @@ const BlogCardModal = ({ blog, isPublicView = false }) => {
 
   // Handle view blog details
   const handleViewBlog = () => {
-    navigate(`/view-blog/${blog._id}`);
+    navigate(`/view/${blog._id}`);
   };
 
   // Handle edit blog

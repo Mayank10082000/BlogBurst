@@ -12,6 +12,7 @@ export const useBlogsStore = create((set) => ({
   isDeletingBlog: false,
   isGettingAllBlogs: false,
   isGettingBlog: false,
+  isViewingBlog: false,
   myBlogs: [],
   allBlogs: [],
   getBlog: null,
@@ -103,6 +104,23 @@ export const useBlogsStore = create((set) => ({
       toast.error(error.response.data.message);
     } finally {
       set({ isGettingBlog: false });
+    }
+  },
+
+  viewBlog: async (blogId) => {
+    set({ isViewingBlog: true });
+    try {
+      const res = await axiosInstance.get(`/blogs/view/${blogId}`);
+      const blog = res.data?.data || {};
+      set({ viewBlog: blog });
+      toast.success("Blog Fetched Successfully!");
+      return blog; // Return the fetched blog data
+    } catch (error) {
+      console.log("Error in viewBlog: ", error);
+      toast.error(error.response.data.message);
+      return null; // Return null in case of an error
+    } finally {
+      set({ isViewingBlog: false });
     }
   },
 }));

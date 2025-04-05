@@ -3,7 +3,6 @@ import express from "express";
 import {
   createBlog,
   getAllBlogs,
-  viewMyBlog,
   updateBlog,
   deleteBlog,
   getAllBlogsByUserId,
@@ -22,7 +21,6 @@ router.get("/view/:blogId", viewBlog);
 // Routes for authenticated users
 router.post("/create", protectRoute, createBlog);
 router.get("/my-blogs/:userId", protectRoute, getAllBlogsByUserId);
-router.get("/view-blog/:blogId", protectRoute, viewMyBlog);
 router.put("/update/:blogId", protectRoute, updateBlog);
 router.delete("/delete/:blogId", protectRoute, deleteBlog);
 router.post("/create-with-ai", protectRoute, createBlogWithAi);

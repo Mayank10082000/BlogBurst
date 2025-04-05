@@ -17,6 +17,7 @@ import CreateBlogPage from "./pages/CreateBlogPage";
 import UserDashboard from "./pages/UserDashboard";
 import PublicBlogsPage from "./pages/PublicBlogsPage";
 import CreateBlogWithAi from "./pages/CreateBlogWithAi";
+import ViewBlogPage from "./pages/ViewBlogPage";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
@@ -41,6 +42,7 @@ const App = () => {
           <Routes>
             {/* Public routes accessible to everyone */}
             <Route path="/" element={<PublicBlogsPage />} />
+            <Route path="/view/:blogId" element={<ViewBlogPage />} />
 
             {/* Authentication routes - redirect to dashboard if already logged in */}
             <Route

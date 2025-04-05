@@ -50,7 +50,7 @@ const ForgotPasswordPage = () => {
           {!isSubmitted ? (
             <>
               <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
-                Reset Password
+                Forgot Password ?
               </h2>
               <p className="text-center text-gray-600 mb-8">
                 Enter your email address to receive a password reset link

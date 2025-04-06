@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
 import { Navigate, Routes, Route } from "react-router-dom";
 import { useAuthStore } from "./store/useAuthStore";
+import { useBlogsStore } from "./store/useBlogsStore";
+import { initializeSocket } from "./lib/socket-client";
 import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 
@@ -21,10 +23,22 @@ import ViewBlogPage from "./pages/ViewBlogPage";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
+  const { setupSocketListeners } = useBlogsStore();
 
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
+
+    // Initialize socket and set up listeners
+    const socket = initializeSocket();
+    setupSocketListeners();
+
+    // Clean up socket connection when component unmounts
+    return () => {
+      if (socket) {
+        socket.disconnect();
+      }
+    };
+  }, [checkAuth, setupSocketListeners]);
 
   if (isCheckingAuth)
     return (

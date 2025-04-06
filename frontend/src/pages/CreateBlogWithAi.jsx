@@ -186,7 +186,9 @@ const CreateBlogWithAi = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <Sparkles className="text-purple-600 mr-2 h-5 w-5" />
-                <h2 className="text-xl font-semibold">AI Generated Content</h2>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  AI Generated Content
+                </h2>
               </div>
               <div className="flex space-x-2">
                 <button

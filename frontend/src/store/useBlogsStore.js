@@ -1,9 +1,7 @@
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
-
-const BASE_URL =
-  import.meta.env.MODE === "development" ? "http://localhost:5001" : "/";
+import { getSocket } from "../lib/socket-client";
 
 export const useBlogsStore = create((set) => ({
   isCreatingBlog: false,
@@ -16,6 +14,39 @@ export const useBlogsStore = create((set) => ({
   myBlogs: [],
   allBlogs: [],
   getBlog: null,
+  viewBlog: null,
+
+  setupSocketListeners: () => {
+    const socket = getSocket();
+
+    socket.on("blogDeleted", (deletedBlogId) => {
+      console.log("Blog deleted event received:", deletedBlogId);
+
+      // Update myBlogs state by filtering out the deleted blog
+      set((state) => ({
+        myBlogs: state.myBlogs.filter((blog) => blog._id !== deletedBlogId),
+        allBlogs: state.allBlogs.filter((blog) => blog._id !== deletedBlogId),
+      }));
+    });
+
+    socket.on("blogCreated", (newBlog) => {
+      set((state) => ({
+        myBlogs: [newBlog, ...state.myBlogs],
+        allBlogs: [newBlog, ...state.allBlogs],
+      }));
+    });
+
+    socket.on("blogUpdated", (updatedBlog) => {
+      set((state) => ({
+        myBlogs: state.myBlogs.map((blog) =>
+          blog._id === updatedBlog._id ? updatedBlog : blog
+        ),
+        allBlogs: state.allBlogs.map((blog) =>
+          blog._id === updatedBlog._id ? updatedBlog : blog
+        ),
+      }));
+    });
+  },
 
   createBlog: async (data) => {
     set({ isCreatingBlog: true });
@@ -68,8 +99,10 @@ export const useBlogsStore = create((set) => ({
     set({ isDeletingBlog: true });
     try {
       const res = await axiosInstance.delete(`/blogs/delete/${blogId}`);
-      set({ isDeletingBlog: res.data });
+      // Note: We're not manually updating the state here anymore
+      // The state will be updated through the socket event listener
       toast.success("Blog Deleted Successfully!");
+      return res.data;
     } catch (error) {
       console.log("Error in deleteBlog: ", error);
       toast.error(error.response.data.message);

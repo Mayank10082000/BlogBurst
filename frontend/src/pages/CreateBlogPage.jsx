@@ -10,6 +10,8 @@ import { useBlogsStore } from "../store/useBlogsStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { Loader2, Save, Trash2, ArrowLeft, AlertCircle } from "lucide-react";
 import toast from "react-hot-toast";
+import Sidebar from "../components/SideBar";
+import ConfirmationDialog from "../components/ConfirmationDialog";
 
 const CreateBlogPage = () => {
   const { blogId } = useParams();
@@ -25,10 +27,24 @@ const CreateBlogPage = () => {
     isCreatingBlog,
     isUpdatingBlog,
     isDeletingBlog,
+
+    // Unsaved changes management
+    hasUnsavedChanges,
+    showConfirmDialog,
+    setHasUnsavedChanges,
+    setShowConfirmDialog,
+    setPendingNavigation,
+    confirmDiscard,
+    cancelDiscard,
   } = useBlogsStore();
 
   // Form state
   const [formData, setFormData] = useState({
+    blogHeading: "",
+    blogContent: "",
+  });
+
+  const [initialFormData, setInitialFormData] = useState({
     blogHeading: "",
     blogContent: "",
   });
@@ -51,10 +67,13 @@ const CreateBlogPage = () => {
               return;
             }
 
-            setFormData({
+            const formValues = {
               blogHeading: blogData.blogHeading,
               blogContent: blogData.blogContent,
-            });
+            };
+
+            setFormData(formValues);
+            setInitialFormData(formValues); // Save initial state for comparison
           } else {
             setError("Blog not found");
           }
@@ -67,8 +86,37 @@ const CreateBlogPage = () => {
       };
 
       fetchBlogData();
+    } else {
+      // For new blogs, set empty initial form data
+      setInitialFormData({ blogHeading: "", blogContent: "" });
     }
   }, [blogId, isEditMode, viewCurrentBlog, authUser]);
+
+  // Check for unsaved changes
+  useEffect(() => {
+    // Check if form data is different from initial data
+    const hasChanges =
+      formData.blogHeading !== initialFormData.blogHeading ||
+      formData.blogContent !== initialFormData.blogContent;
+
+    setHasUnsavedChanges(hasChanges);
+  }, [formData, initialFormData, setHasUnsavedChanges]);
+
+  // Add beforeunload event listener
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = ""; // Required for Chrome
+        return ""; // Required for other browsers
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
 
   // Handle form input changes
   const handleChange = (e) => {
@@ -111,6 +159,7 @@ const CreateBlogPage = () => {
       } else {
         await createBlog(formData);
       }
+      setHasUnsavedChanges(false); // Clear unsaved changes flag
       navigate("/dashboard");
     } catch (error) {
       console.error("Error saving blog:", error);
@@ -134,9 +183,14 @@ const CreateBlogPage = () => {
     }
   };
 
-  // Handle navigation back
+  // Handle navigation back with confirmation check
   const handleGoBack = () => {
-    navigate(-1);
+    if (hasUnsavedChanges) {
+      setShowConfirmDialog(true);
+      setPendingNavigation(() => () => navigate(-1));
+    } else {
+      navigate(-1);
+    }
   };
 
   // Loading state
@@ -165,111 +219,126 @@ const CreateBlogPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      {/* Back button */}
-      <button
-        onClick={handleGoBack}
-        className="flex items-center text-blue-600 hover:text-blue-800 mb-6"
-      >
-        <ArrowLeft className="w-5 h-5 mr-2" /> Back
-      </button>
+    <div className="flex flex-col md:flex-row min-h-screen">
+      {/* Sidebar */}
+      <Sidebar />
 
-      {/* Page Header */}
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">
-        {isEditMode ? "Edit Blog" : "Create Blog"}
-      </h1>
+      {/* Main Content */}
+      <div className="flex-grow p-4 md:p-6">
+        <div className="container mx-auto max-w-4xl">
+          {/* Back button */}
+          <button
+            onClick={handleGoBack}
+            className="flex items-center text-blue-600 hover:text-blue-800 mb-6"
+          >
+            <ArrowLeft className="w-5 h-5 mr-2" /> Back
+          </button>
 
-      {/* Blog Form */}
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white rounded-lg shadow-lg p-6 md:p-8"
-      >
-        <div className="space-y-6">
-          {/* Blog Title */}
-          <div className="space-y-2">
-            <label
-              htmlFor="blogHeading"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Blog Title
-            </label>
-            <input
-              id="blogHeading"
-              name="blogHeading"
-              type="text"
-              value={formData.blogHeading}
-              onChange={handleChange}
-              placeholder="Enter a catchy title..."
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-              maxLength={100}
-            />
-            <div className="text-xs text-gray-500 text-right">
-              {formData.blogHeading.length}/100
-            </div>
-          </div>
+          {/* Page Header */}
+          <h1 className="text-3xl font-bold text-gray-800 mb-6">
+            {isEditMode ? "Edit Blog" : "Create Blog"}
+          </h1>
 
-          {/* Blog Content */}
-          <div className="space-y-2">
-            <label
-              htmlFor="blogContent"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Blog Content
-            </label>
-            <textarea
-              id="blogContent"
-              name="blogContent"
-              value={formData.blogContent}
-              onChange={handleChange}
-              placeholder="Start writing your blog here..."
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-              rows={15}
-            />
-          </div>
+          {/* Blog Form */}
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-lg shadow-lg p-6 md:p-8"
+          >
+            <div className="space-y-6">
+              {/* Blog Title */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="blogHeading"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Blog Title
+                </label>
+                <input
+                  id="blogHeading"
+                  name="blogHeading"
+                  type="text"
+                  value={formData.blogHeading}
+                  onChange={handleChange}
+                  placeholder="Enter a catchy title..."
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  maxLength={100}
+                />
+                <div className="text-xs text-gray-500 text-right">
+                  {formData.blogHeading.length}/100
+                </div>
+              </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 pt-4">
-            <button
-              type="submit"
-              disabled={isCreatingBlog || isUpdatingBlog}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg py-2.5 px-5 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center justify-center"
-            >
-              {isCreatingBlog || isUpdatingBlog ? (
-                <>
-                  <Loader2 className="animate-spin mr-2 h-5 w-5" />
-                  {isEditMode ? "Updating..." : "Publishing..."}
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-5 w-5" />
-                  {isEditMode ? "Update Blog" : "Publish Blog"}
-                </>
-              )}
-            </button>
+              {/* Blog Content */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="blogContent"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Blog Content
+                </label>
+                <textarea
+                  id="blogContent"
+                  name="blogContent"
+                  value={formData.blogContent}
+                  onChange={handleChange}
+                  placeholder="Start writing your blog here..."
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  rows={15}
+                />
+              </div>
 
-            {isEditMode && (
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={isDeletingBlog}
-                className="bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg py-2.5 px-5 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center justify-center"
-              >
-                {isDeletingBlog ? (
-                  <>
-                    <Loader2 className="animate-spin mr-2 h-5 w-5" />
-                    Deleting...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="mr-2 h-5 w-5" />
-                    Delete Blog
-                  </>
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 pt-4">
+                <button
+                  type="submit"
+                  disabled={isCreatingBlog || isUpdatingBlog}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg py-2.5 px-5 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center justify-center"
+                >
+                  {isCreatingBlog || isUpdatingBlog ? (
+                    <>
+                      <Loader2 className="animate-spin mr-2 h-5 w-5" />
+                      {isEditMode ? "Updating..." : "Publishing..."}
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-5 w-5" />
+                      {isEditMode ? "Update Blog" : "Publish Blog"}
+                    </>
+                  )}
+                </button>
+
+                {isEditMode && (
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={isDeletingBlog}
+                    className="bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg py-2.5 px-5 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center justify-center"
+                  >
+                    {isDeletingBlog ? (
+                      <>
+                        <Loader2 className="animate-spin mr-2 h-5 w-5" />
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="mr-2 h-5 w-5" />
+                        Delete Blog
+                      </>
+                    )}
+                  </button>
                 )}
-              </button>
-            )}
-          </div>
+              </div>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showConfirmDialog}
+        onConfirm={confirmDiscard}
+        onCancel={cancelDiscard}
+      />
     </div>
   );
 };

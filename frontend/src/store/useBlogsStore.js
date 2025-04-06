@@ -3,7 +3,7 @@ import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { getSocket } from "../lib/socket-client";
 
-export const useBlogsStore = create((set) => ({
+export const useBlogsStore = create((set, get) => ({
   isCreatingBlog: false,
   isGettingMyBlogs: false,
   isUpdatingBlog: false,
@@ -11,7 +11,50 @@ export const useBlogsStore = create((set) => ({
   isGettingAllBlogs: false,
   isGettingBlog: false,
   isViewingBlog: false,
-  isGeneratingAiContent: false, // New state for AI content generation
+  isGeneratingAiContent: false,
+
+  // Unsaved changes management
+  hasUnsavedChanges: false,
+  showConfirmDialog: false,
+  pendingNavigation: null,
+
+  // Set hasUnsavedChanges flag
+  setHasUnsavedChanges: (value) => {
+    set({ hasUnsavedChanges: value });
+  },
+
+  // Handle confirmation dialog
+  setShowConfirmDialog: (value) => {
+    set({ showConfirmDialog: value });
+  },
+
+  // Set pending navigation function
+  setPendingNavigation: (navigationFn) => {
+    set({ pendingNavigation: navigationFn });
+  },
+
+  // Confirm discard changes and navigate
+  confirmDiscard: () => {
+    const { pendingNavigation } = get();
+    set({
+      showConfirmDialog: false,
+      hasUnsavedChanges: false,
+    });
+
+    if (pendingNavigation) {
+      pendingNavigation();
+      set({ pendingNavigation: null });
+    }
+  },
+
+  // Cancel discard action
+  cancelDiscard: () => {
+    set({
+      showConfirmDialog: false,
+      pendingNavigation: null,
+    });
+  },
+
   myBlogs: [],
   allBlogs: [],
   getBlog: null,

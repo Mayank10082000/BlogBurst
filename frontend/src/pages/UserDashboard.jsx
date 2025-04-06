@@ -1,7 +1,7 @@
 /* Will contain the list of blogs created by the user and if that is empty or user signed up for the first time, it should show a message saying "No blogs created yet" with 2 create buttons:
 1. create blog
 2. create blog with AI
-3. add the sidebar here
+3. add the SideBar here
 
 if a person has already created some blogs, then the list of blogs should be shown in a card format with the following details:
 1. blog title
@@ -151,7 +151,7 @@ const UserDashboard = () => {
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen">
-      {/* Sidebar */}
+      {/* SideBar */}
       <SideBar />
 
       {/* Main Content Area */}

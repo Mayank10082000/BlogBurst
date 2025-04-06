@@ -10,7 +10,7 @@ import {
   RefreshCw,
   Edit,
 } from "lucide-react";
-import Sidebar from "../components/SideBar";
+import SideBar from "../components/SideBar";
 import toast from "react-hot-toast";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 
@@ -170,8 +170,8 @@ const CreateBlogWithAi = () => {
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen">
-      {/* Sidebar */}
-      <Sidebar />
+      {/* SideBar */}
+      <SideBar />
 
       {/* Main Content */}
       <div className="flex-grow p-4 md:p-6">

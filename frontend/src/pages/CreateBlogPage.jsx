@@ -4,7 +4,7 @@ import { useBlogsStore } from "../store/useBlogsStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { Loader2, Save, Trash2, ArrowLeft, AlertCircle } from "lucide-react";
 import toast from "react-hot-toast";
-import Sidebar from "../components/SideBar";
+import SideBar from "../components/SideBar";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 
 const CreateBlogPage = () => {
@@ -226,8 +226,8 @@ const CreateBlogPage = () => {
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen">
-      {/* Sidebar */}
-      <Sidebar />
+      {/* SideBar */}
+      <SideBar />
 
       {/* Main Content */}
       <div className="flex-grow p-4 md:p-6">

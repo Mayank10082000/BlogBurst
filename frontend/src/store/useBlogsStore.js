@@ -71,7 +71,7 @@ export const useBlogsStore = create((set, get) => ({
     socket.on("blogDeleted", (deletedBlogId) => {
       console.log("Blog deleted event received:", deletedBlogId);
 
-      // Update myBlogs state by filtering out the deleted blog
+      // Update both myBlogs and allBlogs states by filtering out the deleted blog
       set((state) => ({
         myBlogs: state.myBlogs.filter((blog) => blog._id !== deletedBlogId),
         allBlogs: state.allBlogs.filter((blog) => blog._id !== deletedBlogId),

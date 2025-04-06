@@ -1,14 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, Edit, Trash2 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useBlogsStore } from "../store/useBlogsStore";
 import toast from "react-hot-toast";
+import ConfirmationDialog from "../components/ConfirmationDialog";
 
 const BlogCardModal = ({ blog, showActionButtons = false }) => {
   const navigate = useNavigate();
   const { authUser } = useAuthStore();
   const { deleteBlog } = useBlogsStore();
+
+  // New state for delete confirmation
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Truncate blog content for preview
   const truncateContent = (content, maxLength = 150) => {
@@ -26,16 +30,26 @@ const BlogCardModal = ({ blog, showActionButtons = false }) => {
     navigate(`/edit-blog/${blog._id}`);
   };
 
-  // Handle delete blog
-  const handleDeleteBlog = async () => {
-    if (window.confirm("Are you sure you want to delete this blog?")) {
-      try {
-        await deleteBlog(blog._id);
-      } catch (error) {
-        console.error("Error deleting blog:", error);
-        toast.error("Failed to delete blog");
-      }
+  // Modify delete handler to show confirmation dialog
+  const handleDeleteBlog = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  // New method to handle confirmed deletion
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteBlog(blog._id);
+      setShowDeleteConfirm(false);
+    } catch (error) {
+      console.error("Error deleting blog:", error);
+      toast.error("Failed to delete blog");
+      setShowDeleteConfirm(false);
     }
+  };
+
+  // Method to cancel deletion
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
   };
 
   // Determine if current user can edit/delete
@@ -80,6 +94,15 @@ const BlogCardModal = ({ blog, showActionButtons = false }) => {
           )}
         </div>
       </div>
+
+      {/* Confirmation Dialog for Delete */}
+      <ConfirmationDialog
+        isOpen={showDeleteConfirm}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        title="Delete Blog"
+        message="Are you sure you want to delete this blog? This action cannot be undone."
+      />
     </div>
   );
 };

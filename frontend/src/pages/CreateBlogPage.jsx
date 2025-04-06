@@ -1,9 +1,3 @@
-// Person will be able to create a blog post or edit a blog post and delete a blog post
-// This should be visible only to the logged in user
-// The person should have 2 text box areas one for heading and another for content.
-// and there should be a publish button to publish the blog and save it in the database.
-// There should be a delete button also to delete the blog post
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useBlogsStore } from "../store/useBlogsStore";
@@ -37,6 +31,9 @@ const CreateBlogPage = () => {
     confirmDiscard,
     cancelDiscard,
   } = useBlogsStore();
+
+  // New state for delete confirmation
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -167,36 +164,37 @@ const CreateBlogPage = () => {
     }
   };
 
-  // Handle blog deletion
-  const handleDelete = async () => {
+  // Modify delete handler to show confirmation dialog
+  const handleDelete = () => {
     if (!isEditMode) return;
+    setShowDeleteConfirm(true);
+  };
 
-    if (window.confirm("Are you sure you want to delete this blog?")) {
-      try {
-        await deleteBlog(blogId);
-        toast.success("Blog deleted successfully");
-        navigate("/dashboard");
-      } catch (error) {
-        console.error("Error deleting blog:", error);
-        toast.error("Failed to delete blog");
-      }
+  // New method to handle confirmed deletion
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteBlog(blogId);
+      toast.success("Blog deleted successfully");
+      setShowDeleteConfirm(false);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error deleting blog:", error);
+      toast.error("Failed to delete blog");
+      setShowDeleteConfirm(false);
     }
   };
 
-  // Handle navigation back with confirmation check
-  // Modified handleGoBack function with unsaved changes check
-  const handleGoBack = () => {
-    // Check if there are unsaved changes
-    const hasChanges =
-      formData.blogHeading !== initialFormData.blogHeading ||
-      formData.blogContent !== initialFormData.blogContent;
+  // Method to cancel deletion
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
+  };
 
-    if (hasChanges) {
-      // If there are unsaved changes, show confirmation dialog
+  // Handle navigation back with confirmation check
+  const handleGoBack = () => {
+    if (hasUnsavedChanges) {
       setShowConfirmDialog(true);
       setPendingNavigation(() => navigate(-1));
     } else {
-      // If no changes, simply navigate back
       navigate(-1);
     }
   };
@@ -341,11 +339,20 @@ const CreateBlogPage = () => {
         </div>
       </div>
 
-      {/* Confirmation Dialog */}
+      {/* Confirmation Dialog for Unsaved Changes */}
       <ConfirmationDialog
         isOpen={showConfirmDialog}
         onConfirm={confirmDiscard}
         onCancel={cancelDiscard}
+      />
+
+      {/* Confirmation Dialog for Delete */}
+      <ConfirmationDialog
+        isOpen={showDeleteConfirm}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        title="Delete Blog"
+        message="Are you sure you want to delete this blog? This action cannot be undone."
       />
     </div>
   );

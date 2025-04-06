@@ -12,6 +12,7 @@ import {
   User,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import ConfirmationDialog from "../components/ConfirmationDialog";
 
 const ViewBlogPage = () => {
   const { blogId } = useParams();
@@ -22,6 +23,9 @@ const ViewBlogPage = () => {
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // New state for delete confirmation
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Fetch blog details on component mount
   useEffect(() => {
@@ -52,18 +56,28 @@ const ViewBlogPage = () => {
     navigate(`/edit-blog/${blogId}`);
   };
 
-  // Handle blog deletion
-  const handleDelete = async () => {
-    if (window.confirm("Are you sure you want to delete this blog?")) {
-      try {
-        await deleteBlog(blogId);
-        toast.success("Blog deleted successfully");
-        navigate("/dashboard");
-      } catch (error) {
-        console.error("Error deleting blog:", error);
-        toast.error("Failed to delete blog");
-      }
+  // Modify delete handler to show confirmation dialog
+  const handleDelete = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  // New method to handle confirmed deletion
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteBlog(blogId);
+      toast.success("Blog deleted successfully");
+      setShowDeleteConfirm(false);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error deleting blog:", error);
+      toast.error("Failed to delete blog");
+      setShowDeleteConfirm(false);
     }
+  };
+
+  // Method to cancel deletion
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
   };
 
   // Check if current user is the author
@@ -182,6 +196,15 @@ const ViewBlogPage = () => {
           </div>
         )}
       </div>
+
+      {/* Confirmation Dialog for Delete */}
+      <ConfirmationDialog
+        isOpen={showDeleteConfirm}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        title="Delete Blog"
+        message="Are you sure you want to delete this blog? This action cannot be undone."
+      />
     </div>
   );
 };

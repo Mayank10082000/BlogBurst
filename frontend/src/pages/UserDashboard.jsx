@@ -23,16 +23,21 @@ import { useAuthStore } from "../store/useAuthStore";
 import { useBlogsStore } from "../store/useBlogsStore";
 import Sidebar from "../components/SideBar";
 import BlogCardModal from "../components/BlogCardModal";
+import ConfirmationDialog from "../components/ConfirmationDialog";
 import { Plus, Bot, AlertCircle } from "lucide-react";
+import toast from "react-hot-toast";
 
 const UserDashboard = () => {
   const navigate = useNavigate();
   const { authUser } = useAuthStore();
-  const { myBlogs, getMyBlogs, isGettingMyBlogs } = useBlogsStore();
+  const { myBlogs, getMyBlogs, deleteBlog, isGettingMyBlogs } = useBlogsStore();
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const blogsPerPage = 6;
+
+  // New state for delete confirmation
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
   // Fetch user's blogs on component mount
   useEffect(() => {
@@ -56,6 +61,30 @@ const UserDashboard = () => {
 
   const handleCreateAiBlog = () => {
     navigate("/create-blog-with-ai");
+  };
+
+  // New method to handle delete confirmation
+  const handleDeleteBlog = (blog) => {
+    setShowDeleteConfirm(blog);
+  };
+
+  // Method to handle confirmed deletion
+  const handleConfirmDelete = async () => {
+    if (showDeleteConfirm) {
+      try {
+        await deleteBlog(showDeleteConfirm._id);
+        toast.success("Blog deleted successfully");
+        setShowDeleteConfirm(null);
+      } catch (error) {
+        console.error("Error deleting blog:", error);
+        toast.error("Failed to delete blog");
+      }
+    }
+  };
+
+  // Method to cancel deletion
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(null);
   };
 
   // Render pagination controls
@@ -148,6 +177,7 @@ const UserDashboard = () => {
                     key={blog._id}
                     blog={blog}
                     showActionButtons={true}
+                    onDelete={() => handleDeleteBlog(blog)}
                   />
                 ))}
               </div>
@@ -158,6 +188,15 @@ const UserDashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Confirmation Dialog for Delete */}
+      <ConfirmationDialog
+        isOpen={!!showDeleteConfirm}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        title="Delete Blog"
+        message="Are you sure you want to delete this blog? This action cannot be undone."
+      />
     </div>
   );
 };

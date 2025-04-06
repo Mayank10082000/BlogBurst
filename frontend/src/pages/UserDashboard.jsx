@@ -21,11 +21,11 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 import { useBlogsStore } from "../store/useBlogsStore";
-import Sidebar from "../components/SideBar";
 import BlogCardModal from "../components/BlogCardModal";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 import { Plus, Bot, AlertCircle } from "lucide-react";
 import toast from "react-hot-toast";
+import SideBar from "../components/SideBar";
 
 const UserDashboard = () => {
   const navigate = useNavigate();
@@ -152,7 +152,7 @@ const UserDashboard = () => {
   return (
     <div className="flex flex-col md:flex-row min-h-screen">
       {/* Sidebar */}
-      <Sidebar />
+      <SideBar />
 
       {/* Main Content Area */}
       <div className="flex-grow p-4 md:p-6">

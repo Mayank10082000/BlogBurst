@@ -23,7 +23,7 @@ const PublicBlogsPage = () => {
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const [blogsPerPage] = useState(9);
+  const [blogsPerPage] = useState(6);
 
   // Fetch all blogs
   useEffect(() => {
@@ -73,7 +73,7 @@ const PublicBlogsPage = () => {
     navigate(`/view/${blogId}`);
   };
 
-  // Render pagination
+  // Render pagination controls
   const renderPagination = () => {
     const pageNumbers = [];
 
@@ -164,20 +164,24 @@ const PublicBlogsPage = () => {
         )}
 
         {/* Blogs Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {currentBlogs.map((blog) => (
-            <div
-              key={blog._id}
-              className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
-              onClick={() => handleViewBlog(blog._id)}
-            >
-              <BlogCardModal blog={blog} />
+        {filteredBlogs.length > 0 && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {currentBlogs.map((blog) => (
+                <div
+                  key={blog._id}
+                  className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
+                  onClick={() => handleViewBlog(blog._id)}
+                >
+                  <BlogCardModal blog={blog} />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {/* Pagination */}
-        {filteredBlogs.length > blogsPerPage && renderPagination()}
+            {/* Pagination */}
+            {filteredBlogs.length > blogsPerPage && renderPagination()}
+          </>
+        )}
       </div>
     </div>
   );

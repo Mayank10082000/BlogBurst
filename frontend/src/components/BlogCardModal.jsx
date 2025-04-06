@@ -42,42 +42,43 @@ const BlogCardModal = ({ blog, showActionButtons = false }) => {
   const isAuthor = authUser?._id === blog.userId;
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 relative">
-      {/* Blog Content */}
-      <div className="mb-4">
-        <h2 className="text-xl font-bold text-gray-800 mb-2">
-          {blog.blogHeading}
-        </h2>
-        <p className="text-gray-600">{truncateContent(blog.blogContent)}</p>
-      </div>
-
+    <div className="bg-white rounded-lg shadow-md p-6 relative flex flex-col h-full">
       {/* Blog Metadata */}
-      <div className="flex justify-between items-center text-sm text-gray-500">
-        <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
+      <div className="flex flex-col justify-between h-full">
+        <div className="mb-4">
+          <h2 className="text-xl font-bold text-gray-800 mb-2">
+            {blog.blogHeading}
+          </h2>
+          <p className="text-gray-600">{truncateContent(blog.blogContent)}</p>
+        </div>
 
-        {/* Action Buttons for My Blogs Page */}
-        {showActionButtons && isAuthor && (
-          <div className="flex space-x-2">
-            <button
-              onClick={handleViewBlog}
-              className="text-blue-600 hover:text-blue-800"
-            >
-              <Eye className="w-5 h-5" />
-            </button>
-            <button
-              onClick={handleEditBlog}
-              className="text-green-600 hover:text-green-800"
-            >
-              <Edit className="w-5 h-5" />
-            </button>
-            <button
-              onClick={handleDeleteBlog}
-              className="text-red-600 hover:text-red-800"
-            >
-              <Trash2 className="w-5 h-5" />
-            </button>
-          </div>
-        )}
+        <div className="flex justify-between items-center text-sm text-gray-500 mt-auto">
+          <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
+
+          {/* Action Buttons for My Blogs Page */}
+          {showActionButtons && isAuthor && (
+            <div className="flex space-x-2">
+              <button
+                onClick={handleViewBlog}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                <Eye className="w-5 h-5" />
+              </button>
+              <button
+                onClick={handleEditBlog}
+                className="text-green-600 hover:text-green-800"
+              >
+                <Edit className="w-5 h-5" />
+              </button>
+              <button
+                onClick={handleDeleteBlog}
+                className="text-red-600 hover:text-red-800"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

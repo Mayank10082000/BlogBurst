@@ -172,6 +172,8 @@ export const createBlogWithAi = async (req, res) => {
   }
 };
 
+// In backend/src/controllers/blogs.controller.js
+
 export const viewBlog = async (req, res) => {
   try {
     const blogId = req.params.blogId;
@@ -180,7 +182,11 @@ export const viewBlog = async (req, res) => {
       return res.status(400).json({ message: "Blog ID is required" });
     }
 
-    const blog = await Blog.findById(blogId);
+    // Updated to populate author information
+    const blog = await Blog.findById(blogId).populate(
+      "userId",
+      "fullName email"
+    );
 
     if (!blog) {
       return res.status(404).json({ message: "Blog not found" });

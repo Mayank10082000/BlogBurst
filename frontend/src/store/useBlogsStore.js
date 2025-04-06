@@ -107,7 +107,7 @@ export const useBlogsStore = create((set) => ({
     }
   },
 
-  viewBlog: async (blogId) => {
+  viewCurrentBlog: async (blogId) => {
     set({ isViewingBlog: true });
     try {
       const res = await axiosInstance.get(`/blogs/view/${blogId}`);

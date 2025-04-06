@@ -1,15 +1,11 @@
-// Handles preview display of the blog posts on the public blogs page and user dashboard page
-// 3 small icons like delete, edit and view blog in the right side of the card, just like we have in trigger tide
-
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, Edit, Trash2, MoreVertical } from "lucide-react";
+import { Eye, Edit, Trash2 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useBlogsStore } from "../store/useBlogsStore";
 import toast from "react-hot-toast";
 
-const BlogCardModal = ({ blog, isPublicView = false }) => {
-  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+const BlogCardModal = ({ blog, showActionButtons = false }) => {
   const navigate = useNavigate();
   const { authUser } = useAuthStore();
   const { deleteBlog } = useBlogsStore();
@@ -59,48 +55,29 @@ const BlogCardModal = ({ blog, isPublicView = false }) => {
       <div className="flex justify-between items-center text-sm text-gray-500">
         <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
 
-        {/* Action Icons */}
-        <div className="relative">
-          <button
-            onClick={() => setIsOptionsOpen(!isOptionsOpen)}
-            className="hover:bg-gray-100 rounded-full p-1"
-          >
-            <MoreVertical className="w-5 h-5" />
-          </button>
-
-          {isOptionsOpen && isAuthor && !isPublicView && (
-            <div className="absolute right-0 top-full z-10 bg-white shadow-lg rounded-md border mt-2">
-              <button
-                onClick={handleViewBlog}
-                className="flex items-center w-full px-4 py-2 hover:bg-gray-100 text-sm"
-              >
-                <Eye className="w-4 h-4 mr-2" /> View
-              </button>
-              <button
-                onClick={handleEditBlog}
-                className="flex items-center w-full px-4 py-2 hover:bg-gray-100 text-sm"
-              >
-                <Edit className="w-4 h-4 mr-2" /> Edit
-              </button>
-              <button
-                onClick={handleDeleteBlog}
-                className="flex items-center w-full px-4 py-2 hover:bg-gray-100 text-sm text-red-600"
-              >
-                <Trash2 className="w-4 h-4 mr-2" /> Delete
-              </button>
-            </div>
-          )}
-
-          {/* Public View Icons */}
-          {isPublicView && (
+        {/* Action Buttons for My Blogs Page */}
+        {showActionButtons && isAuthor && (
+          <div className="flex space-x-2">
             <button
               onClick={handleViewBlog}
-              className="hover:bg-gray-100 rounded-full p-1"
+              className="text-blue-600 hover:text-blue-800"
             >
               <Eye className="w-5 h-5" />
             </button>
-          )}
-        </div>
+            <button
+              onClick={handleEditBlog}
+              className="text-green-600 hover:text-green-800"
+            >
+              <Edit className="w-5 h-5" />
+            </button>
+            <button
+              onClick={handleDeleteBlog}
+              className="text-red-600 hover:text-red-800"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

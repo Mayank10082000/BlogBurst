@@ -108,10 +108,8 @@ const CreateBlogPage = () => {
     try {
       if (isEditMode) {
         await updateBlog(blogId, formData);
-        toast.success("Blog updated successfully");
       } else {
         await createBlog(formData);
-        toast.success("Blog published successfully");
       }
       navigate("/dashboard");
     } catch (error) {

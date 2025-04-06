@@ -171,7 +171,7 @@ const PublicBlogsPage = () => {
               className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
               onClick={() => handleViewBlog(blog._id)}
             >
-              <BlogCardModal blog={blog} isPublicView={true} />
+              <BlogCardModal blog={blog} />
             </div>
           ))}
         </div>

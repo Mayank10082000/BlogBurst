@@ -131,7 +131,11 @@ const UserDashboard = () => {
               {/* Blog Grid */}
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 px-4 md:px-0">
                 {currentBlogs.map((blog) => (
-                  <BlogCardModal key={blog._id} blog={blog} />
+                  <BlogCardModal
+                    key={blog._id}
+                    blog={blog}
+                    showActionButtons={true}
+                  />
                 ))}
               </div>
 

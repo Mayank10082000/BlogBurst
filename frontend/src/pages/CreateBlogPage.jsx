@@ -187,7 +187,7 @@ const CreateBlogPage = () => {
   const handleGoBack = () => {
     if (hasUnsavedChanges) {
       setShowConfirmDialog(true);
-      setPendingNavigation(() => () => navigate(-1));
+      setPendingNavigation(() => navigate(-1));
     } else {
       navigate(-1);
     }

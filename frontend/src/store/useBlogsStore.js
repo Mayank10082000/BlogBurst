@@ -37,17 +37,19 @@ export const useBlogsStore = create((set, get) => ({
   confirmDiscard: () => {
     const { pendingNavigation } = get();
 
-    // Execute the navigation function BEFORE clearing the state
-    if (pendingNavigation) {
-      pendingNavigation(); // Execute the stored navigation function
-    }
-
-    // Then clear the dialog state
+    // Close the dialog first
     set({
       showConfirmDialog: false,
       hasUnsavedChanges: false,
-      pendingNavigation: null, // Make sure to clear this after execution
     });
+
+    // Execute navigation with a slight delay to ensure state updates complete
+    if (pendingNavigation) {
+      setTimeout(() => {
+        pendingNavigation();
+        set({ pendingNavigation: null });
+      }, 10);
+    }
   },
 
   // Cancel discard action

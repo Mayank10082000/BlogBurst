@@ -173,7 +173,6 @@ export const useBlogsStore = create((set, get) => ({
       const res = await axiosInstance.delete(`/blogs/delete/${blogId}`);
       // Note: We're not manually updating the state here anymore
       // The state will be updated through the socket event listener
-      toast.success("Blog Deleted Successfully!");
       return res.data;
     } catch (error) {
       console.log("Error in deleteBlog: ", error);

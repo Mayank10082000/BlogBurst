@@ -142,14 +142,26 @@ export const getAllBlogs = async (req, res) => {
 export const createBlogWithAi = async (req, res) => {
   try {
     const { prompt } = req.body;
-
-    const userId = req.user._id; // Get the userId from the request object
+    const userId = req.user._id;
+    // Check if "saveToDatabase" parameter is present in the query string
+    // If it's not specified or is set to anything other than "true", we'll just generate content
+    const saveToDatabase = req.query.saveToDatabase === "true";
 
     if (!prompt || !userId) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     const generatedContent = await generateBlogPostWithAi(prompt);
+
+    // If saveToDatabase is false, just return the generated content without saving
+    if (!saveToDatabase) {
+      return res.status(200).json({
+        message: "Content generated successfully",
+        data: generatedContent,
+      });
+    }
+
+    // Otherwise, save to database as before
     const { blogHeading, blogContent } = generatedContent;
 
     const newBlog = new Blog({
@@ -171,8 +183,6 @@ export const createBlogWithAi = async (req, res) => {
     res.status(500).json({ message: "Internal Server error" });
   }
 };
-
-// In backend/src/controllers/blogs.controller.js
 
 export const viewBlog = async (req, res) => {
   try {

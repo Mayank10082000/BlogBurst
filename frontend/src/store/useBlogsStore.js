@@ -11,6 +11,7 @@ export const useBlogsStore = create((set) => ({
   isGettingAllBlogs: false,
   isGettingBlog: false,
   isViewingBlog: false,
+  isGeneratingAiContent: false, // New state for AI content generation
   myBlogs: [],
   allBlogs: [],
   getBlog: null,
@@ -60,6 +61,29 @@ export const useBlogsStore = create((set) => ({
       toast.error(error.response.data.message);
     } finally {
       set({ isCreatingBlog: false });
+    }
+  },
+
+  // New function to generate AI content without saving
+  generateAiContent: async (prompt) => {
+    set({ isGeneratingAiContent: true });
+    try {
+      const response = await axiosInstance.post(
+        "/blogs/create-with-ai?saveToDatabase=false",
+        {
+          prompt,
+        }
+      );
+      toast.success("AI has generated your blog content!");
+      return response.data.data;
+    } catch (error) {
+      console.error("Error generating content:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to generate content"
+      );
+      return null;
+    } finally {
+      set({ isGeneratingAiContent: false });
     }
   },
 

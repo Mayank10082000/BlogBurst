@@ -1,9 +1,6 @@
-// If possible try to automatically paste the heading and content created by AI in the text box areas and the person can edit it if he wants to and there should be publish button to publish the blog and save it in the database and there should be a delete button also to delete the blog post
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useBlogsStore } from "../store/useBlogsStore";
-import { axiosInstance } from "../lib/axios";
 import {
   Loader2,
   Save,
@@ -12,12 +9,19 @@ import {
   Sparkles,
   RefreshCw,
   Edit,
+  AlertOctagon,
 } from "lucide-react";
+import Sidebar from "../components/SideBar";
 import toast from "react-hot-toast";
 
 const CreateBlogWithAi = () => {
   const navigate = useNavigate();
-  const { createBlog, isCreatingBlog } = useBlogsStore();
+  const {
+    createBlog,
+    isCreatingBlog,
+    generateAiContent,
+    isGeneratingAiContent,
+  } = useBlogsStore();
 
   // States
   const [prompt, setPrompt] = useState("");
@@ -25,8 +29,33 @@ const CreateBlogWithAi = () => {
     blogHeading: "",
     blogContent: "",
   });
-  const [isGenerating, setIsGenerating] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState(null);
+
+  // Set unsaved changes when content is generated or edited
+  useEffect(() => {
+    if (hasGenerated) {
+      setHasUnsavedChanges(true);
+    }
+  }, [hasGenerated, generatedContent]);
+
+  // Add a window beforeunload event listener
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (hasUnsavedChanges && hasGenerated) {
+        e.preventDefault();
+        e.returnValue = ""; // This is required for Chrome
+        return ""; // This is required for other browsers
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges, hasGenerated]);
 
   // Handle prompt change
   const handlePromptChange = (e) => {
@@ -40,9 +69,10 @@ const CreateBlogWithAi = () => {
       ...prev,
       [name]: value,
     }));
+    setHasUnsavedChanges(true);
   };
 
-  // Generate content with AI
+  // Generate content with AI using the store function
   const handleGenerate = async () => {
     if (!prompt.trim()) {
       toast.error("Please enter a topic or prompt");
@@ -50,39 +80,43 @@ const CreateBlogWithAi = () => {
     }
 
     try {
-      setIsGenerating(true);
-      const response = await axiosInstance.post("/blogs/create-with-ai", {
-        prompt,
-      });
+      const content = await generateAiContent(prompt);
 
-      if (response.data && response.data.data) {
-        const { blogHeading, blogContent } = response.data.data;
-
+      if (content) {
         setGeneratedContent({
-          blogHeading,
-          blogContent,
+          blogHeading: content.blogHeading,
+          blogContent: content.blogContent,
         });
-
         setHasGenerated(true);
-        toast.success("AI has generated your blog content!");
+        setHasUnsavedChanges(true);
       }
     } catch (error) {
-      console.error("Error generating content:", error);
-      toast.error(
-        error.response?.data?.message || "Failed to generate content"
-      );
-    } finally {
-      setIsGenerating(false);
+      console.error("Error in handleGenerate:", error);
     }
   };
 
   // Regenerate content
   const handleRegenerate = () => {
-    setHasGenerated(false);
-    setGeneratedContent({
-      blogHeading: "",
-      blogContent: "",
-    });
+    // Ask for confirmation if there are unsaved changes
+    if (hasUnsavedChanges) {
+      if (
+        confirm(
+          "Are you sure you want to regenerate? Your current changes will be lost."
+        )
+      ) {
+        setHasGenerated(false);
+        setGeneratedContent({
+          blogHeading: "",
+          blogContent: "",
+        });
+      }
+    } else {
+      setHasGenerated(false);
+      setGeneratedContent({
+        blogHeading: "",
+        blogContent: "",
+      });
+    }
   };
 
   // Validate form
@@ -100,7 +134,7 @@ const CreateBlogWithAi = () => {
     return true;
   };
 
-  // Handle form submission
+  // Handle form submission - this is the ONLY place where a blog should be published
   const handlePublish = async (e) => {
     e.preventDefault();
 
@@ -112,157 +146,214 @@ const CreateBlogWithAi = () => {
         blogContent: generatedContent.blogContent,
       });
 
-      toast.success("Blog published successfully");
+      setHasUnsavedChanges(false);
       navigate("/dashboard");
     } catch (error) {
       console.error("Error publishing blog:", error);
-      toast.error("Failed to publish blog");
     }
   };
 
-  // Handle navigation back
+  // Handle navigation back with confirmation check
   const handleGoBack = () => {
-    navigate(-1);
+    if (hasUnsavedChanges && hasGenerated) {
+      setShowConfirmDialog(true);
+      setPendingNavigation(() => () => navigate(-1));
+    } else {
+      navigate(-1);
+    }
+  };
+
+  // Handle confirm dialog actions
+  const handleConfirmDiscard = () => {
+    setShowConfirmDialog(false);
+    setHasUnsavedChanges(false);
+    // Navigate away without saving the blog
+    if (pendingNavigation) {
+      pendingNavigation();
+    }
+  };
+
+  const handleCancelDiscard = () => {
+    setShowConfirmDialog(false);
+    setPendingNavigation(null);
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      {/* Back button */}
-      <button
-        onClick={handleGoBack}
-        className="flex items-center text-blue-600 hover:text-blue-800 mb-6"
-      >
-        <ArrowLeft className="w-5 h-5 mr-2" /> Back
-      </button>
+    <div className="flex flex-col md:flex-row min-h-screen">
+      {/* Sidebar */}
+      <Sidebar />
 
-      {/* Page Header */}
-      <div className="flex items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">
-          Create Blog with AI
-        </h1>
-        <Bot className="ml-3 text-blue-600 h-8 w-8" />
-      </div>
+      {/* Main Content */}
+      <div className="flex-grow p-4 md:p-6">
+        <div className="container mx-auto max-w-4xl">
+          {/* Back button */}
+          <button
+            onClick={handleGoBack}
+            className="flex items-center text-blue-600 hover:text-blue-800 mb-6"
+          >
+            <ArrowLeft className="w-5 h-5 mr-2" /> Back
+          </button>
 
-      <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
-        {!hasGenerated ? (
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <label
-                htmlFor="prompt"
-                className="block text-sm font-medium text-gray-700"
-              >
-                What would you like to write about?
-              </label>
-              <textarea
-                id="prompt"
-                value={prompt}
-                onChange={handlePromptChange}
-                placeholder="Enter a topic or idea for your blog post (e.g., 'The benefits of meditation', 'How to start investing', etc.)"
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                rows={4}
-              />
-            </div>
-
-            <button
-              onClick={handleGenerate}
-              disabled={isGenerating || !prompt.trim()}
-              className="bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg py-2.5 px-5 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 flex items-center justify-center"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="animate-spin mr-2 h-5 w-5" />
-                  Generating Content...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 h-5 w-5" />
-                  Generate Blog Content
-                </>
-              )}
-            </button>
+          {/* Page Header */}
+          <div className="flex items-center mb-6">
+            <h1 className="text-3xl font-bold text-gray-800">
+              Create Blog with AI
+            </h1>
+            <Bot className="ml-3 text-blue-600 h-8 w-8" />
           </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <Sparkles className="text-purple-600 mr-2 h-5 w-5" />
-                <h2 className="text-xl font-semibold text-gray-800">
-                  AI Generated Content
-                </h2>
-              </div>
-              <div className="flex space-x-2">
+
+          <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
+            {!hasGenerated ? (
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label
+                    htmlFor="prompt"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    What would you like to write about?
+                  </label>
+                  <textarea
+                    id="prompt"
+                    value={prompt}
+                    onChange={handlePromptChange}
+                    placeholder="Enter a topic or idea for your blog post (e.g., 'The benefits of meditation', 'How to start investing', etc.)"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    rows={4}
+                  />
+                </div>
+
                 <button
-                  onClick={handleRegenerate}
-                  className="flex items-center text-purple-600 hover:text-purple-800 text-sm font-medium"
+                  onClick={handleGenerate}
+                  disabled={isGeneratingAiContent || !prompt.trim()}
+                  className="bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg py-2.5 px-5 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 flex items-center justify-center"
                 >
-                  <RefreshCw className="mr-1 h-4 w-4" />
-                  Regenerate
+                  {isGeneratingAiContent ? (
+                    <>
+                      <Loader2 className="animate-spin mr-2 h-5 w-5" />
+                      Generating Content...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-5 w-5" />
+                      Generate Blog Content
+                    </>
+                  )}
                 </button>
-                <button className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium">
-                  <Edit className="mr-1 h-4 w-4" />
-                  Edit
-                </button>
               </div>
-            </div>
-            <form onSubmit={handlePublish} className="space-y-6">
-              {/* Blog Title */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="blogHeading"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Blog Title
-                </label>
-                <input
-                  id="blogHeading"
-                  name="blogHeading"
-                  type="text"
-                  value={generatedContent.blogHeading}
-                  onChange={handleContentChange}
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                />
-              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <Sparkles className="text-purple-600 mr-2 h-5 w-5" />
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      AI Generated Content
+                    </h2>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={handleRegenerate}
+                      className="flex items-center text-purple-600 hover:text-purple-800 text-sm font-medium"
+                    >
+                      <RefreshCw className="mr-1 h-4 w-4" />
+                      Regenerate
+                    </button>
+                    <button className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium">
+                      <Edit className="mr-1 h-4 w-4" />
+                      Edit
+                    </button>
+                  </div>
+                </div>
+                <form onSubmit={handlePublish} className="space-y-6">
+                  {/* Blog Title */}
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="blogHeading"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Blog Title
+                    </label>
+                    <input
+                      id="blogHeading"
+                      name="blogHeading"
+                      type="text"
+                      value={generatedContent.blogHeading}
+                      onChange={handleContentChange}
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    />
+                  </div>
 
-              {/* Blog Content */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="blogContent"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Blog Content
-                </label>
-                <textarea
-                  id="blogContent"
-                  name="blogContent"
-                  value={generatedContent.blogContent}
-                  onChange={handleContentChange}
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                  rows={15}
-                />
-              </div>
+                  {/* Blog Content */}
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="blogContent"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Blog Content
+                    </label>
+                    <textarea
+                      id="blogContent"
+                      name="blogContent"
+                      value={generatedContent.blogContent}
+                      onChange={handleContentChange}
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                      rows={15}
+                    />
+                  </div>
 
-              {/* Publish Button */}
-              <button
-                type="submit"
-                disabled={isCreatingBlog}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg py-2.5 px-5 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center justify-center"
-              >
-                {isCreatingBlog ? (
-                  <>
-                    <Loader2 className="animate-spin mr-2 h-5 w-5" />
-                    Publishing...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-5 w-5" />
-                    Publish Blog
-                  </>
-                )}
-              </button>
-            </form>
+                  {/* Publish Button */}
+                  <button
+                    type="submit"
+                    disabled={isCreatingBlog}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg py-2.5 px-5 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center justify-center"
+                  >
+                    {isCreatingBlog ? (
+                      <>
+                        <Loader2 className="animate-spin mr-2 h-5 w-5" />
+                        Publishing...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-5 w-5" />
+                        Publish Blog
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
+
+      {/* Discard Confirmation Dialog */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md mx-auto">
+            <div className="flex items-center text-amber-600 mb-4">
+              <AlertOctagon className="h-6 w-6 mr-2" />
+              <h3 className="text-lg font-semibold">Unsaved Changes</h3>
+            </div>
+            <p className="text-gray-700 mb-6">
+              You have not published your blog yet. Are you sure you want to
+              discard it?
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={handleCancelDiscard}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDiscard}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

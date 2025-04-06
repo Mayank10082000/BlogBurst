@@ -181,7 +181,6 @@ const UserDashboard = () => {
                   />
                 ))}
               </div>
-
               {/* Pagination */}
               {myBlogs.length > blogsPerPage && renderPagination()}
             </>

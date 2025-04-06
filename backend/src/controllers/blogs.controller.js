@@ -123,7 +123,9 @@ export const getAllBlogsByUserId = async (req, res) => {
 
 export const getAllBlogs = async (req, res) => {
   try {
-    const blogs = await Blog.find().sort({ createdAt: -1 }); // Sort by createdAt in descending order
+    const blogs = await Blog.find()
+      .sort({ createdAt: -1 })
+      .populate("userId", "fullName"); // Sort by createdAt in descending order
 
     if (!blogs) {
       return res.status(404).json({ message: "No blogs found" });

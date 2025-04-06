@@ -9,10 +9,10 @@ import {
   Sparkles,
   RefreshCw,
   Edit,
-  AlertOctagon,
 } from "lucide-react";
 import Sidebar from "../components/SideBar";
 import toast from "react-hot-toast";
+import ConfirmationDialog from "../components/ConfirmationDialog";
 
 const CreateBlogWithAi = () => {
   const navigate = useNavigate();
@@ -21,6 +21,14 @@ const CreateBlogWithAi = () => {
     isCreatingBlog,
     generateAiContent,
     isGeneratingAiContent,
+    // Import the confirmation dialog state and functions from useBlogsStore
+    hasUnsavedChanges,
+    showConfirmDialog,
+    setHasUnsavedChanges,
+    setShowConfirmDialog,
+    setPendingNavigation,
+    confirmDiscard,
+    cancelDiscard,
   } = useBlogsStore();
 
   // States
@@ -30,16 +38,13 @@ const CreateBlogWithAi = () => {
     blogContent: "",
   });
   const [hasGenerated, setHasGenerated] = useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [pendingNavigation, setPendingNavigation] = useState(null);
 
   // Set unsaved changes when content is generated or edited
   useEffect(() => {
     if (hasGenerated) {
       setHasUnsavedChanges(true);
     }
-  }, [hasGenerated, generatedContent]);
+  }, [hasGenerated, generatedContent, setHasUnsavedChanges]);
 
   // Add a window beforeunload event listener
   useEffect(() => {
@@ -161,21 +166,6 @@ const CreateBlogWithAi = () => {
     } else {
       navigate(-1);
     }
-  };
-
-  // Handle confirm dialog actions
-  const handleConfirmDiscard = () => {
-    setShowConfirmDialog(false);
-    setHasUnsavedChanges(false);
-    // Navigate away without saving the blog
-    if (pendingNavigation) {
-      pendingNavigation();
-    }
-  };
-
-  const handleCancelDiscard = () => {
-    setShowConfirmDialog(false);
-    setPendingNavigation(null);
   };
 
   return (
@@ -325,35 +315,12 @@ const CreateBlogWithAi = () => {
         </div>
       </div>
 
-      {/* Discard Confirmation Dialog */}
-      {showConfirmDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md mx-auto">
-            <div className="flex items-center text-amber-600 mb-4">
-              <AlertOctagon className="h-6 w-6 mr-2" />
-              <h3 className="text-lg font-semibold">Unsaved Changes</h3>
-            </div>
-            <p className="text-gray-700 mb-6">
-              You have not published your blog yet. Are you sure you want to
-              discard it?
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={handleCancelDiscard}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmDiscard}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-              >
-                Discard
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Use the imported ConfirmationDialog component */}
+      <ConfirmationDialog
+        isOpen={showConfirmDialog}
+        onConfirm={confirmDiscard}
+        onCancel={cancelDiscard}
+      />
     </div>
   );
 };

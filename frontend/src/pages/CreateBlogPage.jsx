@@ -184,11 +184,19 @@ const CreateBlogPage = () => {
   };
 
   // Handle navigation back with confirmation check
+  // Modified handleGoBack function with unsaved changes check
   const handleGoBack = () => {
-    if (hasUnsavedChanges) {
+    // Check if there are unsaved changes
+    const hasChanges =
+      formData.blogHeading !== initialFormData.blogHeading ||
+      formData.blogContent !== initialFormData.blogContent;
+
+    if (hasChanges) {
+      // If there are unsaved changes, show confirmation dialog
       setShowConfirmDialog(true);
       setPendingNavigation(() => navigate(-1));
     } else {
+      // If no changes, simply navigate back
       navigate(-1);
     }
   };
